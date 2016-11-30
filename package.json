@@ -1,6 +1,6 @@
 {
   "name": "hubot-nba",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A hubot script for NBA stats",
   "main": "src/nba.coffee",
   "scripts": {
@@ -22,5 +22,9 @@
     "basketball",
     "stats",
     "sports"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/brandly/hubot-nba.git"
+  }
 }
