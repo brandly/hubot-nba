@@ -11,29 +11,8 @@ module.exports = (robot) ->
       res.reply "Couldn't find player with name \"#{name}\""
       return
 
-    Promise.all([
-      nba.stats.playerInfo({ PlayerID }),
-      nba.stats.playerProfile({ PlayerID })
-    ]).then ([playerInfo, playerProfile]) ->
-      info = playerInfo.commonPlayerInfo[0]
-      averages = playerProfile.overviewSeasonAvg[0]
-      lastGame = playerProfile.gameLogs[0]
-
-      res.reply """
-        #{info.displayFirstLast}, #{info.teamName} #{info.position}
-        #{info.height} #{info.weight}lbs
-
-        Season averages
-        #{displayGameData(averages)}
-
-        Last game (#{lastGame.matchup})
-        #{displayGameData(lastGame)}
-      """
-    , (reason) ->
-      res.reply """
-        Error getting player stats
-        #{JSON.stringify reason, null, 2}
-      """
+    getPlayerSummary PlayerID, (error, summary) =>
+      res.reply error || summary
 
   robot.respond /nba team (.*)/, (res) ->
     name = res.match[1]
@@ -183,3 +162,35 @@ buildTeamStanding = (data) ->
     winPercent: getStat(stats, 'winPercent'),
     gamesBehind: getStat(stats, 'gamesBehind')
   }
+
+getPlayerProfile = (opts) =>
+  nba.stats.playerProfile(opts)
+    .then (profile) =>
+      averages = profile.seasonTotalsRegularSeason[profile.seasonTotalsRegularSeason.length - 1]
+
+      return {
+        averages
+      }
+
+getPlayerSummary = (PlayerID, callback) =>
+  Promise.all([
+    nba.stats.playerInfo({ PlayerID }),
+    getPlayerProfile({ PlayerID })
+  ]).then ([playerInfo, playerProfile]) ->
+    info = playerInfo.commonPlayerInfo[0]
+    { averages } = playerProfile
+
+    callback null, """
+      #{info.displayFirstLast}, #{info.teamName} #{info.position}
+      #{info.height} #{info.weight}lbs
+
+      Season averages
+      #{displayGameData(averages)}
+
+      http://stats.nba.com/player/#!/#{PlayerID}/career/
+    """
+  , (reason) ->
+    callback """
+      Error getting player stats
+      #{JSON.stringify reason, null, 2}
+    """
