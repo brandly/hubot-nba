@@ -4,7 +4,7 @@
   "description": "A hubot script for NBA stats",
   "main": "src/nba.coffee",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --compilers coffee:coffee-script/register test"
   },
   "author": "brandly <brandly13@gmail.com>",
   "license": "MIT",
@@ -26,5 +26,13 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/brandly/hubot-nba.git"
+  },
+  "devDependencies": {
+    "bluebird": "3.4.6",
+    "chai": "3.5.0",
+    "co": "4.6.0",
+    "coffee-script": "1.11.1",
+    "hubot-test-helper": "1.5.0",
+    "mocha": "3.2.0"
   }
 }

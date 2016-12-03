@@ -1,3 +1,20 @@
+# Description:
+#   A hubot script for NBA stats
+#
+# Dependencies:
+#
+# Configuration:
+#
+# Commands:
+#   nba player <player name> - view individual stats
+#   nba team <team name> - view team stats
+#   nba scores - view the scores and schedules of today's games
+#   nba standings - view Eastern and Western conference standings
+#
+# Author:
+#   brandly
+#
+
 nba = require 'nba'
 request = require 'superagent'
 

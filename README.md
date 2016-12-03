@@ -21,4 +21,7 @@ nba standings - view Eastern and Western conference standings
 
 ### tests
 
-I have none. Send me a PR, if you'd like, since I'm not sure how to test this thing.
+```shell
+$ npm test
+```
+
