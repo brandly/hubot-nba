@@ -6,10 +6,10 @@
 # Configuration:
 #
 # Commands:
-#   nba player <player name> - view individual stats
-#   nba team <team name> - view team stats
-#   nba scores - view the scores and schedules of today's games
-#   nba standings - view Eastern and Western conference standings
+#   hubot nba player <player name> - view individual stats
+#   hubot nba team <team name> - view team stats
+#   hubot nba scores - view the scores and schedules of today's games
+#   hubot nba standings - view Eastern and Western conference standings
 #
 # Author:
 #   brandly
