@@ -1,5 +1,7 @@
 # hubot-nba
 
+[![Build Status](https://travis-ci.org/brandly/hubot-nba.svg?branch=master)](https://travis-ci.org/brandly/hubot-nba)
+
 > A hubot script for NBA stats
 
 ### install
