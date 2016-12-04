@@ -1,11 +1,11 @@
 {
   "name": "hubot-nba",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "A hubot script for NBA stats",
   "main": "index.coffee",
   "scripts": {
     "test": "npm run lint && mocha --compilers coffee:coffee-script/register test",
-    "lint": "coffeelint src/*.coffee"
+    "lint": "coffeelint src/*.coffee test/*.coffee"
   },
   "author": "brandly <brandly13@gmail.com>",
   "license": "MIT",

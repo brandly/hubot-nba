@@ -8,6 +8,8 @@
 # Commands:
 #   hubot nba player <player name> - view individual stats
 #   hubot nba team <team name> - view team stats
+#   hubot nba roster <team name> - view list team's players
+#   hubot nba coaches <team name> - view list team's coaches
 #   hubot nba scores - view the scores and schedules of today's games
 #   hubot nba standings - view Eastern and Western conference standings
 #   hubot nba hustle - view hustle stat leaders
@@ -32,7 +34,7 @@ module.exports = (robot) ->
       return
 
     getPlayerSummary PlayerID, (error, summary) ->
-      res.reply error || summary
+      res.reply error or summary
 
   robot.respond /nba team (.*)/, (res) ->
     name = res.match[1]
@@ -52,6 +54,54 @@ module.exports = (robot) ->
     , (reason) ->
       res.reply """
         Error getting team stats
+        #{JSON.stringify reason, null, 2}
+      """
+
+  robot.respond /nba roster (.*)/, (res) ->
+    name = res.match[1]
+    TeamID = nba.teamIdFromName name
+
+    if not TeamID?
+      res.reply "Couldn't find team with name \"#{name}\""
+      return
+
+    nba.stats.commonTeamRoster({ TeamID }).then ({ commonTeamRoster }) ->
+      listings = commonTeamRoster.map (player) ->
+        heightSplits = player.height.split '-'
+        height = "#{heightSplits[0]}'#{heightSplits[1]}\""
+
+        """
+          ##{player.num} #{player.player} (#{player.position})
+          #{height} #{player.weight}lbs
+          #{player.age} years old (#{player.birthDate})
+          #{player.school or ''}
+        """.trim()
+      res.reply listings.join('\n\n')
+    , (reason) ->
+      res.reply """
+        Error getting team roster
+        #{JSON.stringify reason, null, 2}
+      """
+
+  robot.respond /nba coaches (.*)/, (res) ->
+    name = res.match[1]
+    TeamID = nba.teamIdFromName name
+
+    if not TeamID?
+      res.reply "Couldn't find team with name \"#{name}\""
+      return
+
+    nba.stats.commonTeamRoster({ TeamID }).then ({ coaches }) ->
+      listings = coaches.map (coach) ->
+        """
+          #{coach.coachName}, #{coach.coachType}
+          #{coach.school or ''}
+        """.trim()
+
+      res.reply listings.join('\n\n')
+    , (reason) ->
+      res.reply """
+        Error getting team coaches
         #{JSON.stringify reason, null, 2}
       """
 
@@ -283,4 +333,3 @@ hustleLeaders = (callback) ->
     callback null, stats
 
   , (error) -> callback(error)
-

@@ -14,7 +14,7 @@ describe 'nba', ->
   afterEach ->
     @room.destroy()
 
-  context 'player info', ->
+  context 'player', ->
     command = '@hubot nba player steph'
     beforeEach ->
       co =>
@@ -31,7 +31,7 @@ describe 'nba', ->
       expect(reply).to.include 'Guard'
       expect(reply).to.include 'Season averages'
 
-  context 'team info', ->
+  context 'team', ->
     command = '@hubot nba team spurs'
     beforeEach ->
       co =>
@@ -48,6 +48,38 @@ describe 'nba', ->
       expect(reply).to.include 'pts'
       expect(reply).to.include 'ast'
       expect(reply).to.include 'reb'
+
+  context 'team roster', ->
+    command = '@hubot nba roster spurs'
+    beforeEach ->
+      co =>
+        yield @room.user.say username, command
+        yield new Promise.delay(1000)
+
+    it 'should reply with team roster', ->
+      expect(@room.messages[0]).to.eql [username, command]
+      expect(@room.messages[1][0]).to.eql 'hubot'
+
+      reply = @room.messages[1][1]
+
+      expect(reply).to.include 'Kawhi Leonard'
+      kawhisBday = 'JUN 29, 1991'
+      expect(reply).to.include kawhisBday
+      expect(reply).to.include 'Tony Parker'
+
+  context 'team coaches', ->
+    command = '@hubot nba coaches spurs'
+    beforeEach ->
+      co =>
+        yield @room.user.say username, command
+        yield new Promise.delay(1000)
+
+    it 'should reply with team coaches', ->
+      expect(@room.messages[0]).to.eql [username, command]
+      expect(@room.messages[1][0]).to.eql 'hubot'
+
+      reply = @room.messages[1][1]
+      expect(reply).to.include 'Gregg Popovich'
 
   context 'game scores', ->
     command = '@hubot nba scores'
