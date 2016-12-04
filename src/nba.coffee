@@ -144,7 +144,7 @@ module.exports = (robot) ->
 displayAverages = (avg) ->
   """
     #{avg.gp} GP | #{avg.min} MIN | #{avg.pts} PTS
-    #{avg.fgm} FMG | #{avg.fga} GMA | #{avg.fgPct} FG%
+    #{avg.fgm} FGM | #{avg.fga} FGA | #{avg.fgPct} FG%
     #{avg.fG3M} 3PM | #{avg.fG3A} 3PA | #{avg.fg3Pct} 3P%
     #{avg.ftm} FTM | #{avg.fta} FTA | #{avg.ftPct} FT%
     #{avg.oreb} OREB | #{avg.dreb} DREB | #{avg.reb} REB
