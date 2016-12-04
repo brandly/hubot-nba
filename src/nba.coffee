@@ -10,6 +10,7 @@
 #   hubot nba team <team name> - view team stats
 #   hubot nba scores - view the scores and schedules of today's games
 #   hubot nba standings - view Eastern and Western conference standings
+#   hubot nba hustle - view hustle stat leaders
 #
 # Author:
 #   brandly
@@ -17,6 +18,8 @@
 
 nba = require 'nba'
 request = require 'superagent'
+_ = require 'lodash'
+Case = require 'case'
 
 module.exports = (robot) ->
 
@@ -28,7 +31,7 @@ module.exports = (robot) ->
       res.reply "Couldn't find player with name \"#{name}\""
       return
 
-    getPlayerSummary PlayerID, (error, summary) =>
+    getPlayerSummary PlayerID, (error, summary) ->
       res.reply error || summary
 
   robot.respond /nba team (.*)/, (res) ->
@@ -99,10 +102,53 @@ module.exports = (robot) ->
         """
       res.reply response.join('\n\n\n')
 
+  robot.respond /nba hustle/, (res) ->
+    hustleLeaders (error, stats) ->
+      if error?
+        res.reply """
+          Error getting hustle leaders
+          #{JSON.stringify error, null, 2}
+        """
+        return
+
+      commonKeys = [
+        'playerId'
+        'playerName'
+        'teamId'
+        'teamAbbreviation'
+        'age'
+        'rank'
+      ]
+
+      statLeaderLists = stats.map (stat) ->
+        listings = stat.leaders.map (leader) ->
+          countKey = Object.keys(leader).find (key) ->
+            !_.includes(commonKeys, key)
+
+          {
+            playerName,
+            teamAbbreviation
+          } = leader
+
+          """
+            #{playerName} (#{teamAbbreviation}) #{leader[countKey]}
+          """
+
+        """
+          > #{stat.name}
+          #{listings.join '\n'}
+        """
+
+      res.reply(statLeaderLists.join '\n\n')
+
 displayGameData = (game) ->
   "#{game.pts}pts, #{game.ast}ast, #{game.reb}reb in #{game.min} minutes"
 
-currentScoresUrl = 'http://data.nba.com/data/5s/v2015/json/mobile_teams/nba/2016/scores/00_todays_scores.json'
+currentScoresUrl = [
+  'http://data.nba.com',
+  '/data/5s/v2015/json/mobile_teams/nba'
+  '/2016/scores/00_todays_scores.json'
+].join ''
 requestCurrentScores = (cb) ->
   request
     .get(currentScoresUrl)
@@ -142,7 +188,10 @@ buildStatus = (game) ->
   else
     return "#{game.cl} - #{game.stt}"
 
-conferenceStandingsUrl = 'http://cdn.espn.go.com/core/nba/standings?xhr=1&device=desktop'
+conferenceStandingsUrl = [
+  'http://cdn.espn.go.com'
+  '/core/nba/standings?xhr=1&device=desktop'
+].join ''
 requestConferenceStandings = (cb) ->
   request
     .get(conferenceStandingsUrl)
@@ -180,16 +229,17 @@ buildTeamStanding = (data) ->
     gamesBehind: getStat(stats, 'gamesBehind')
   }
 
-getPlayerProfile = (opts) =>
+getPlayerProfile = (opts) ->
   nba.stats.playerProfile(opts)
-    .then (profile) =>
-      averages = profile.seasonTotalsRegularSeason[profile.seasonTotalsRegularSeason.length - 1]
+    .then (profile) ->
+      regularSeason = profile.seasonTotalsRegularSeason
+      averages = regularSeason[regularSeason.length - 1]
 
       return {
         averages
       }
 
-getPlayerSummary = (PlayerID, callback) =>
+getPlayerSummary = (PlayerID, callback) ->
   Promise.all([
     nba.stats.playerInfo({ PlayerID }),
     getPlayerProfile({ PlayerID })
@@ -211,3 +261,19 @@ getPlayerSummary = (PlayerID, callback) =>
       Error getting player stats
       #{JSON.stringify reason, null, 2}
     """
+
+hustleLeaders = (callback) ->
+  nba.stats.playerHustleLeaders().then (val) ->
+    stats = val.resultSets.map (set) ->
+      name: Case.title(set.name).replace 'Player ', ''
+      leaders: set.rowSet.map (row) ->
+        _.zip(set.headers, row)
+          .reduce (store, val) ->
+            store[Case.camel val[0]] = val[1]
+            return store
+          , {}
+
+    callback null, stats
+
+  , (error) -> callback(error)
+

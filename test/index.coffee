@@ -84,3 +84,21 @@ describe 'nba', ->
       expect(reply).to.include 'Celtics'
       expect(reply).to.include 'Warriors'
       expect(reply).to.include 'Spurs'
+
+  context 'hustle', ->
+    command = '@hubot nba hustle'
+    beforeEach ->
+      co =>
+        yield @room.user.say username, command
+        yield new Promise.delay(1000)
+
+    it 'should reply with best hustlers', ->
+      expect(@room.messages[0]).to.eql [username, command]
+      expect(@room.messages[1][0]).to.eql 'hubot'
+
+      reply = @room.messages[1][1]
+
+      expect(reply).to.include 'Contested Shots'
+      expect(reply).to.include 'Charges Drawn'
+      expect(reply).to.include 'Deflections'
+      expect(reply).to.include 'Screen Assist'
