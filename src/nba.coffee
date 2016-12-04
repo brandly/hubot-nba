@@ -141,8 +141,15 @@ module.exports = (robot) ->
 
       res.reply(statLeaderLists.join '\n\n')
 
-displayGameData = (game) ->
-  "#{game.pts}pts, #{game.ast}ast, #{game.reb}reb in #{game.min} minutes"
+displayAverages = (avg) ->
+  """
+    #{avg.gp} GP | #{avg.min} MIN | #{avg.pts} PTS
+    #{avg.fgm} FMG | #{avg.fga} GMA | #{avg.fgPct} FG%
+    #{avg.fG3M} 3PM | #{avg.fG3A} 3PA | #{avg.fg3Pct} 3P%
+    #{avg.ftm} FTM | #{avg.fta} FTA | #{avg.ftPct} FT%
+    #{avg.oreb} OREB | #{avg.dreb} DREB | #{avg.reb} REB
+    #{avg.ast} AST | #{avg.stl} STL | #{avg.blk} BLK
+  """
 
 currentScoresUrl = [
   'http://data.nba.com',
@@ -252,7 +259,7 @@ getPlayerSummary = (PlayerID, callback) ->
       #{info.height} #{info.weight}lbs
 
       Season averages
-      #{displayGameData(averages)}
+      #{displayAverages(averages)}
 
       http://stats.nba.com/player/#!/#{PlayerID}/career/
     """
