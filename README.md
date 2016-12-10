@@ -14,12 +14,7 @@ Then, add `"hubot-nba"` to your `external-scripts.json` list.
 
 ### usage
 
-```
-nba player <player name> - view individual stats
-nba team <team name> - view team stats
-nba scores - view the scores and schedules of today's games
-nba standings - view Eastern and Western conference standings
-```
+View [the code](https://github.com/brandly/hubot-nba/blob/master/src/nba.coffee) for a full list of supported commands.
 
 ### tests
 
