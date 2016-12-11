@@ -192,14 +192,53 @@ module.exports = (robot) ->
       res.reply(statLeaderLists.join '\n\n')
 
 displayAverages = (avg) ->
-  """
-    #{avg.gp} GP | #{avg.min} MIN | #{avg.pts} PTS
-    #{avg.fgm} FGM | #{avg.fga} FGA | #{avg.fgPct} FG%
-    #{avg.fG3M} 3PM | #{avg.fG3A} 3PA | #{avg.fg3Pct} 3P%
-    #{avg.ftm} FTM | #{avg.fta} FTA | #{avg.ftPct} FT%
-    #{avg.oreb} OREB | #{avg.dreb} DREB | #{avg.reb} REB
-    #{avg.ast} AST | #{avg.stl} STL | #{avg.blk} BLK
-  """
+  toTable [
+    "#{avg.gp} GP"
+    "#{avg.min} MIN"
+    "#{avg.pts} PTS"
+    "#{avg.fgm} FGM"
+    "#{avg.fga} FGA"
+    "#{avg.fgPct} FG%"
+    "#{avg.fG3M} 3PM"
+    "#{avg.fG3A} 3PA"
+    "#{avg.fg3Pct} 3P%"
+    "#{avg.ftm} FTM"
+    "#{avg.fta} FTA"
+    "#{avg.ftPct} FT%"
+    "#{avg.oreb} OREB"
+    "#{avg.dreb} DREB"
+    "#{avg.reb} REB"
+    "#{avg.ast} AST"
+    "#{avg.stl} STL"
+    "#{avg.blk} BLK"
+  ]
+
+toTable = (stats) ->
+  columnCount = 2
+  rowsPerColumn = stats.length / columnCount
+
+  listOfColumns = _.range(columnCount).map (index) ->
+    stats.slice(index * rowsPerColumn, (index + 1) * rowsPerColumn)
+
+  paddedColumns = listOfColumns.map padColumn
+
+  joinedRows = _.range(paddedColumns[0].length).map (rowIndex) ->
+    _.range(columnCount)
+      .map (columnIndex) ->
+        paddedColumns[columnIndex][rowIndex]
+      .join ' | '
+
+  "```#{joinedRows.join '\n'}```"
+
+padColumn = (column) ->
+  widestColumn = Math.max.apply(Math, column.map (item) -> item.length)
+
+  column.map (item) ->
+    while item.length < widestColumn
+      index = item.indexOf(' ')
+      item = item.slice(0, index) + ' ' + item.slice(index, item.length)
+
+    item
 
 currentScoresUrl = [
   'http://data.nba.com',
