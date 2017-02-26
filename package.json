@@ -4,7 +4,7 @@
   "description": "A hubot script for NBA stats",
   "main": "index.coffee",
   "scripts": {
-    "test": "npm run lint && mocha --compilers coffee:coffee-script/register test",
+    "test": "npm run lint && mocha --compilers coffee:coffee-script/register --timeout 5000 test",
     "lint": "coffeelint src/*.coffee test/*.coffee"
   },
   "author": "brandly <brandly13@gmail.com>",

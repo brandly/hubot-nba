@@ -6,6 +6,7 @@ co = require 'co'
 { expect } = require 'chai'
 
 username = 'brandly'
+WAIT_FOR_MESSAGE = 2000
 
 describe 'nba', ->
   beforeEach ->
@@ -19,7 +20,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(1000)
+        yield new Promise.delay(WAIT_FOR_MESSAGE)
 
     it 'should reply with player stats', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -36,7 +37,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(1000)
+        yield new Promise.delay(WAIT_FOR_MESSAGE)
 
     it 'should reply with team stats', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -54,7 +55,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(1000)
+        yield new Promise.delay(WAIT_FOR_MESSAGE)
 
     it 'should reply with team roster', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -72,7 +73,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(1000)
+        yield new Promise.delay(WAIT_FOR_MESSAGE)
 
     it 'should reply with team coaches', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -86,7 +87,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(1000)
+        yield new Promise.delay(WAIT_FOR_MESSAGE)
 
     it 'should reply with today\'s games', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -102,7 +103,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(1000)
+        yield new Promise.delay(WAIT_FOR_MESSAGE)
 
     it 'should reply with conference standings', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -122,7 +123,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(1000)
+        yield new Promise.delay(WAIT_FOR_MESSAGE)
 
     it 'should reply with best hustlers', ->
       expect(@room.messages[0]).to.eql [username, command]
