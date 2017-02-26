@@ -8,6 +8,15 @@ co = require 'co'
 username = 'brandly'
 WAIT_FOR_MESSAGE = 2000
 
+whenResponseArrives = (room) ->
+  return new Promise((fulfill) ->
+    intervalId = setInterval(() ->
+      if room.messages.length > 1
+        clearInterval intervalId
+        fulfill()
+    , 200)
+  )
+
 describe 'nba', ->
   beforeEach ->
     @room = helper.createRoom()
@@ -20,7 +29,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(WAIT_FOR_MESSAGE)
+        yield whenResponseArrives(@room)
 
     it 'should reply with player stats', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -37,7 +46,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(WAIT_FOR_MESSAGE)
+        yield whenResponseArrives(@room)
 
     it 'should reply with team stats', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -55,7 +64,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(WAIT_FOR_MESSAGE)
+        yield whenResponseArrives(@room)
 
     it 'should reply with team roster', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -73,7 +82,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(WAIT_FOR_MESSAGE)
+        yield whenResponseArrives(@room)
 
     it 'should reply with team coaches', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -87,7 +96,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(WAIT_FOR_MESSAGE)
+        yield whenResponseArrives(@room)
 
     it 'should reply with today\'s games', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -103,7 +112,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(WAIT_FOR_MESSAGE)
+        yield whenResponseArrives(@room)
 
     it 'should reply with conference standings', ->
       expect(@room.messages[0]).to.eql [username, command]
@@ -123,7 +132,7 @@ describe 'nba', ->
     beforeEach ->
       co =>
         yield @room.user.say username, command
-        yield new Promise.delay(WAIT_FOR_MESSAGE)
+        yield whenResponseArrives(@room)
 
     it 'should reply with best hustlers', ->
       expect(@room.messages[0]).to.eql [username, command]
