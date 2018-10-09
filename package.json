@@ -12,7 +12,7 @@
   "dependencies": {
     "case": "1.4.2",
     "lodash": "4.17.5",
-    "nba": "3.2.4",
+    "nba": "4.4.0",
     "superagent": "3.7.0"
   },
   "keywords": [
@@ -36,7 +36,7 @@
     "co": "4.6.0",
     "coffee-script": "1.11.1",
     "coffeelint": "1.16.0",
-    "hubot-test-helper": "1.5.0",
+    "hubot-test-helper": "1.9.0",
     "mocha": "3.2.0"
   }
 }
