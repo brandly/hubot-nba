@@ -72,10 +72,10 @@ describe 'nba', ->
 
       reply = @room.messages[1][1]
 
-      expect(reply).to.include 'Kawhi Leonard'
-      kawhisBday = 'JUN 29, 1991'
-      expect(reply).to.include kawhisBday
-      expect(reply).to.include 'Tony Parker'
+      expect(reply).to.include 'DeMar DeRozan'
+      demarsBday = 'AUG 07, 1989'
+      expect(reply).to.include demarsBday
+      expect(reply).to.include 'Pau Gasol'
 
   context 'team coaches', ->
     command = '@hubot nba coaches spurs'

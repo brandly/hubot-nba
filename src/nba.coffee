@@ -45,6 +45,10 @@ module.exports = (robot) ->
       return
 
     nba.stats.teamStats({ TeamId }).then (data) ->
+      if not data.length
+        res.reply "Couldn't find stats for team \"#{TeamId}\""
+        return
+
       info = data[0]
 
       res.reply """
