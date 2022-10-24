@@ -1,7 +1,6 @@
 Helper = require 'hubot-test-helper'
 helper = new Helper '../src'
 
-Promise = require 'bluebird'
 co = require 'co'
 { expect } = require 'chai'
 
@@ -60,7 +59,7 @@ describe 'nba', ->
       expect(reply).to.include 'reb'
 
   context 'team roster', ->
-    command = '@hubot nba roster spurs'
+    command = '@hubot nba roster bucks'
     beforeEach ->
       co =>
         yield @room.user.say username, command
@@ -72,10 +71,10 @@ describe 'nba', ->
 
       reply = @room.messages[1][1]
 
-      expect(reply).to.include 'DeMar DeRozan'
-      demarsBday = 'AUG 07, 1989'
-      expect(reply).to.include demarsBday
-      expect(reply).to.include 'Pau Gasol'
+      expect(reply).to.include 'Giannis Antetokounmpo'
+      giannisBday = 'DEC 06, 1994'
+      expect(reply).to.include giannisBday
+      expect(reply).to.include 'Jrue Holiday'
 
   context 'team coaches', ->
     command = '@hubot nba coaches spurs'

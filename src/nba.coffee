@@ -247,7 +247,7 @@ padColumn = (column) ->
 currentScoresUrl = [
   'http://data.nba.com',
   '/data/5s/v2015/json/mobile_teams/nba'
-  '/2016/scores/00_todays_scores.json'
+  '/2022/scores/00_todays_scores.json'
 ].join ''
 requestCurrentScores = (cb) ->
   request
