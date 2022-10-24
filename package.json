@@ -31,7 +31,6 @@
     "url": "git://github.com/brandly/hubot-nba.git"
   },
   "devDependencies": {
-    "bluebird": "3.4.6",
     "chai": "3.5.0",
     "co": "4.6.0",
     "coffee-script": "1.11.1",

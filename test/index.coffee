@@ -1,7 +1,6 @@
 Helper = require 'hubot-test-helper'
 helper = new Helper '../src'
 
-Promise = require 'bluebird'
 co = require 'co'
 { expect } = require 'chai'
 
