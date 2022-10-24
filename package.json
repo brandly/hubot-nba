@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "case": "1.4.2",
-    "lodash": "4.17.5",
+    "lodash": "4.17.21",
     "nba": "4.15.0",
     "superagent": "8.0.2"
   },
