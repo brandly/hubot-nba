@@ -124,9 +124,9 @@ module.exports = (robot) ->
       if game.isOver
         homeTeamWon = home.score > away.score
         if homeTeamWon
-          "#{away.name} at *#{home.name}*"
+          "#{away.name} at **#{home.name}**"
         else
-          "*#{away.name}* at #{home.name}"
+          "**#{away.name}** at #{home.name}"
 
       else
         "#{away.name} at #{home.name}"
