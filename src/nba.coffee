@@ -23,23 +23,18 @@ request = require 'superagent'
 _ = require 'lodash'
 Case = require 'case'
 
-sendMarkdown = (res, text) ->
-  res.message.telegram.sendMessage(
-    res.message.room,
-    text,
-    { parse_mode: "Markdown" }
-  )
-
 module.exports = (robot) ->
   robot.Response::markdown = (text) ->
-    if @message.telegram?
-      @message.telegram.sendMessage(
+    # Check if we're using Telegram adapter
+    if robot.adapterName == 'telegram'
+      # Get the Telegram API instance from the adapter
+      robot.adapter.bot.sendMessage(
         @message.room,
         text,
         parse_mode: "Markdown"
       )
     else
-      res.reply text
+      @send text
 
   robot.respond /nba player (.*)/, (res) ->
     name = res.match[1]
@@ -248,7 +243,7 @@ toTable = (stats) ->
         paddedColumns[columnIndex][rowIndex]
       .join ' | '
 
-  "```#{joinedRows.join '\n'}```"
+  "```\n#{joinedRows.join '\n'}\n```"
 
 padColumn = (column) ->
   widestColumn = Math.max.apply(Math, column.map (item) -> item.length)
