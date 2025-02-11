@@ -23,40 +23,56 @@ request = require 'superagent'
 _ = require 'lodash'
 Case = require 'case'
 
+sendMarkdown = (res, text) ->
+  res.message.telegram.sendMessage(
+    res.message.room,
+    text,
+    { parse_mode: "Markdown" }
+  )
+
 module.exports = (robot) ->
+  robot.Response::markdown = (text) ->
+    if @message.telegram?
+      @message.telegram.sendMessage(
+        @message.room,
+        text,
+        parse_mode: "Markdown"
+      )
+    else
+      res.reply text
 
   robot.respond /nba player (.*)/, (res) ->
     name = res.match[1]
     PlayerID = nba.playerIdFromName name
 
     if not PlayerID?
-      res.reply "Couldn't find player with name \"#{name}\""
+      res.markdown "Couldn't find player with name \"#{name}\""
       return
 
     getPlayerSummary PlayerID, (error, summary) ->
-      res.reply error or summary
+      res.markdown error or summary
 
   robot.respond /nba team (.*)/, (res) ->
     name = res.match[1]
     TeamId = nba.teamIdFromName name
 
     if not TeamId?
-      res.reply "Couldn't find team with name \"#{name}\""
+      res.markdown "Couldn't find team with name \"#{name}\""
       return
 
     nba.stats.teamStats({ TeamId }).then (data) ->
       if not data.length
-        res.reply "Couldn't find stats for team \"#{TeamId}\""
+        res.markdown "Couldn't find stats for team \"#{TeamId}\""
         return
 
       info = data[0]
 
-      res.reply """
+      res.markdown """
         #{info.teamName} (#{info.w}-#{info.l})
         #{info.pts}pts, #{info.ast}ast, #{info.reb}reb
       """
     , (reason) ->
-      res.reply """
+      res.markdown """
         Error getting team stats
         #{JSON.stringify reason, null, 2}
       """
@@ -66,7 +82,7 @@ module.exports = (robot) ->
     TeamID = nba.teamIdFromName name
 
     if not TeamID?
-      res.reply "Couldn't find team with name \"#{name}\""
+      res.markdown "Couldn't find team with name \"#{name}\""
       return
 
     nba.stats.commonTeamRoster({ TeamID }).then ({ commonTeamRoster }) ->
@@ -80,9 +96,9 @@ module.exports = (robot) ->
           #{player.age} years old (#{player.birthDate})
           #{player.school or ''}
         """.trim()
-      res.reply listings.join('\n\n')
+      res.markdown listings.join('\n\n')
     , (reason) ->
-      res.reply """
+      res.markdown """
         Error getting team roster
         #{JSON.stringify reason, null, 2}
       """
@@ -92,7 +108,7 @@ module.exports = (robot) ->
     TeamID = nba.teamIdFromName name
 
     if not TeamID?
-      res.reply "Couldn't find team with name \"#{name}\""
+      res.markdown "Couldn't find team with name \"#{name}\""
       return
 
     nba.stats.commonTeamRoster({ TeamID }).then ({ coaches }) ->
@@ -102,9 +118,9 @@ module.exports = (robot) ->
           #{coach.school or ''}
         """.trim()
 
-      res.reply listings.join('\n\n')
+      res.markdown listings.join('\n\n')
     , (reason) ->
-      res.reply """
+      res.markdown """
         Error getting team coaches
         #{JSON.stringify reason, null, 2}
       """
@@ -124,9 +140,9 @@ module.exports = (robot) ->
       if game.isOver
         homeTeamWon = home.score > away.score
         if homeTeamWon
-          "#{away.name} at **#{home.name}**"
+          "#{away.name} at *#{home.name}*"
         else
-          "**#{away.name}** at #{home.name}"
+          "*#{away.name}* at #{home.name}"
 
       else
         "#{away.name} at #{home.name}"
@@ -137,7 +153,7 @@ module.exports = (robot) ->
           #{getTeamNames(game)}
           #{game.status} | #{getContext(game)}
         """
-      res.reply response.join('\n\n')
+      res.markdown response.join('\n\n')
 
   robot.respond /nba standing(s?)/, (res) ->
     displayTeam = (t) ->
@@ -154,12 +170,12 @@ module.exports = (robot) ->
 
           #{conference.teams.map(displayTeam).join('\n\n')}
         """
-      res.reply response.join('\n\n\n')
+      res.markdown response.join('\n\n\n')
 
   robot.respond /nba hustle/, (res) ->
     hustleLeaders (error, stats) ->
       if error?
-        res.reply """
+        res.markdown """
           Error getting hustle leaders
           #{JSON.stringify error, null, 2}
         """
@@ -193,7 +209,7 @@ module.exports = (robot) ->
           #{listings.join '\n'}
         """
 
-      res.reply(statLeaderLists.join '\n\n')
+      res.markdown(statLeaderLists.join '\n\n')
 
 displayAverages = (avg) ->
   toTable [
@@ -232,7 +248,7 @@ toTable = (stats) ->
         paddedColumns[columnIndex][rowIndex]
       .join ' | '
 
-  "```\n#{joinedRows.join '\n'}\n```"
+  "```#{joinedRows.join '\n'}```"
 
 padColumn = (column) ->
   widestColumn = Math.max.apply(Math, column.map (item) -> item.length)
