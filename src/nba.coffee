@@ -232,7 +232,7 @@ toTable = (stats) ->
         paddedColumns[columnIndex][rowIndex]
       .join ' | '
 
-  "```#{joinedRows.join '\n'}```"
+  "```\n#{joinedRows.join '\n'}\n```"
 
 padColumn = (column) ->
   widestColumn = Math.max.apply(Math, column.map (item) -> item.length)
