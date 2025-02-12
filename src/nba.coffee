@@ -363,19 +363,24 @@ getPlayerSummary = (PlayerID, callback) ->
     { averages } = playerProfile
 
     callback null, """
-      #{info.displayFirstLast}, #{info.teamName} #{info.position}
-      #{info.height} #{info.weight}lbs
+      #{info.displayFirstLast} ##{info.jersey}
+      #{info.teamCity} #{info.teamName} | #{info.position}
+      #{displayHeight info.height} #{info.weight} lbs
 
       Season averages
       #{displayAverages(averages)}
 
-      http://nba.com/stats/player/#{PlayerID}/career/
+      http://nba.com/stats/player/#{PlayerID}/career
     """
   , (reason) ->
     callback """
       Error getting player stats
       #{JSON.stringify reason, null, 2}
     """
+
+displayHeight = (str) ->
+  [feet, inches] = str.split '-'
+  "#{feet}'#{inches}\""
 
 hustleLeaders = (callback) ->
   nba.stats.playerHustleLeaders().then (val) ->
