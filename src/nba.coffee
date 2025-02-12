@@ -81,23 +81,27 @@ module.exports = (robot) ->
       res.markdown "Couldn't find team with name \"#{name}\""
       return
 
-    nba.stats.commonTeamRoster({ TeamID }).then ({ commonTeamRoster }) ->
-      listings = commonTeamRoster.map (player) ->
-        heightSplits = player.height.split '-'
-        height = "#{heightSplits[0]}'#{heightSplits[1]}\""
-
+    playersFromTeamId TeamID, (error, players) ->
+      if error?
+        res.markdown """
+          Error getting team roster
+          #{JSON.stringify error, null, 2}
         """
-          ##{player.num} #{player.player} (#{player.position})
-          #{height} #{player.weight}lbs
-          #{player.age} years old (#{player.birthDate})
-          #{player.school or ''}
+        return
+
+      listings = players.map (player) ->
+        if player.DRAFT_YEAR?
+          pick = "Round #{player.DRAFT_ROUND}, Pick #{player.DRAFT_NUMBER}"
+          draftDetails = "#{pick} (#{player.DRAFT_YEAR})"
+        else
+          draftDetails = "(Undrafted)"
+        name = "#{player.PLAYER_FIRST_NAME} #{player.PLAYER_LAST_NAME}"
+        """
+          #{name} ##{player.JERSEY_NUMBER} (#{player.POSITION})
+          #{displayHeight player.HEIGHT} #{player.WEIGHT} lbs
+          #{player.COLLEGE} | #{draftDetails}
         """.trim()
       res.markdown listings.join('\n\n')
-    , (reason) ->
-      res.markdown """
-        Error getting team roster
-        #{JSON.stringify reason, null, 2}
-      """
 
   robot.respond /nba coaches (.*)/i, (res) ->
     name = res.match[1]
@@ -424,4 +428,13 @@ playerIdFromName = (name, cb) ->
       return
     cb null, players.find((p) ->
       p.FULL_NAME.toLowerCase().includes(name.toLowerCase())
+    )
+
+playersFromTeamId = (teamId, cb) ->
+  fetchPlayers (err, players) ->
+    if err?
+      cb err
+      return
+    cb null, players.filter((p) ->
+      p.TEAM_ID == teamId
     )
