@@ -214,13 +214,13 @@ displayAverages = (avg) ->
     "#{avg.pts} PTS"
     "#{avg.fgm} FGM"
     "#{avg.fga} FGA"
-    "#{avg.fgPct} FG%"
+    "#{displayPercentage avg.fgPct} FG%"
     "#{avg.fG3M} 3PM"
     "#{avg.fG3A} 3PA"
-    "#{avg.fg3Pct} 3P%"
+    "#{displayPercentage avg.fg3Pct} 3P%"
     "#{avg.ftm} FTM"
     "#{avg.fta} FTA"
-    "#{avg.ftPct} FT%"
+    "#{displayPercentage avg.ftPct} FT%"
     "#{avg.oreb} OREB"
     "#{avg.dreb} DREB"
     "#{avg.reb} REB"
@@ -228,6 +228,9 @@ displayAverages = (avg) ->
     "#{avg.stl} STL"
     "#{avg.blk} BLK"
   ]
+
+displayPercentage = (num) ->
+  (num * 100).toFixed 1
 
 toTable = (stats) ->
   columnCount = 2
