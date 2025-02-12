@@ -20,6 +20,7 @@
 
 nba = require 'nba'
 request = require 'superagent'
+cheerio = require 'cheerio'
 _ = require 'lodash'
 Case = require 'case'
 
@@ -38,14 +39,14 @@ module.exports = (robot) ->
 
   robot.respond /nba player (.*)/, (res) ->
     name = res.match[1]
-    PlayerID = nba.playerIdFromName name
 
-    if not PlayerID?
-      res.markdown "Couldn't find player with name \"#{name}\""
-      return
+    playerIdFromName name, (error, player) ->
+      if not player?
+        res.markdown "Couldn't find player with name \"#{name}\""
+        return
 
-    getPlayerSummary PlayerID, (error, summary) ->
-      res.markdown error or summary
+      getPlayerSummary player.PERSON_ID, (error, summary) ->
+        res.markdown error or summary
 
   robot.respond /nba team (.*)/, (res) ->
     name = res.match[1]
@@ -387,3 +388,31 @@ hustleLeaders = (callback) ->
     callback null, stats
 
   , (error) -> callback(error)
+
+cachedPlayers = null
+fetchPlayers = (cb) ->
+  if cachedPlayers?
+    cb null, cachedPlayers
+  fetch('https://www.nba.com/players')
+    .then((res) -> res.text())
+    .then((text) ->
+      $ = cheerio.load text
+      data = JSON.parse($('#__NEXT_DATA__').text())
+      players = data.props.pageProps.players.map((player) ->
+        Object.assign({}, player, {
+          FULL_NAME: "#{player.PLAYER_FIRST_NAME} #{player.PLAYER_LAST_NAME}"
+        })
+      )
+      cachedPlayers = players
+      cb null, players
+    )
+    .catch (error) -> cb(error)
+
+playerIdFromName = (name, cb) ->
+  fetchPlayers (err, players) ->
+    if err?
+      cb err
+      return
+    cb null, players.find((p) ->
+      p.FULL_NAME.toLowerCase().includes(name.toLowerCase())
+    )

@@ -24,7 +24,7 @@ describe 'nba', ->
     @room.destroy()
 
   context 'player', ->
-    command = '@hubot nba player steph'
+    command = '@hubot nba player stephen'
     beforeEach ->
       co =>
         yield @room.user.say username, command
