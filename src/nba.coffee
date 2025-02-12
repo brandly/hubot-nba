@@ -393,6 +393,7 @@ cachedPlayers = null
 fetchPlayers = (cb) ->
   if cachedPlayers?
     cb null, cachedPlayers
+    return
   fetch('https://www.nba.com/players')
     .then((res) -> res.text())
     .then((text) ->
