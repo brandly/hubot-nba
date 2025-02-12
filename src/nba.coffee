@@ -366,7 +366,7 @@ getPlayerSummary = (PlayerID, callback) ->
       Season averages
       #{displayAverages(averages)}
 
-      http://stats.nba.com/player/#{PlayerID}/career/
+      http://nba.com/stats/player/#{PlayerID}/career/
     """
   , (reason) ->
     callback """
