@@ -37,7 +37,7 @@ module.exports = (robot) ->
     else
       @send text
 
-  robot.respond /nba player (.*)/, (res) ->
+  robot.respond /nba player (.*)/i, (res) ->
     name = res.match[1]
 
     playerIdFromName name, (error, player) ->
@@ -48,7 +48,7 @@ module.exports = (robot) ->
       getPlayerSummary player.PERSON_ID, (error, summary) ->
         res.markdown error or summary
 
-  robot.respond /nba team (.*)/, (res) ->
+  robot.respond /nba team (.*)/i, (res) ->
     name = res.match[1]
     TeamId = nba.teamIdFromName name
 
@@ -73,7 +73,7 @@ module.exports = (robot) ->
         #{JSON.stringify reason, null, 2}
       """
 
-  robot.respond /nba roster (.*)/, (res) ->
+  robot.respond /nba roster (.*)/i, (res) ->
     name = res.match[1]
     TeamID = nba.teamIdFromName name
 
@@ -99,7 +99,7 @@ module.exports = (robot) ->
         #{JSON.stringify reason, null, 2}
       """
 
-  robot.respond /nba coaches (.*)/, (res) ->
+  robot.respond /nba coaches (.*)/i, (res) ->
     name = res.match[1]
     TeamID = nba.teamIdFromName name
 
@@ -121,7 +121,7 @@ module.exports = (robot) ->
         #{JSON.stringify reason, null, 2}
       """
 
-  robot.respond /nba scores/, (res) ->
+  robot.respond /nba scores/i, (res) ->
 
     getContext = (game) ->
       if game.hasBegun
@@ -151,7 +151,7 @@ module.exports = (robot) ->
         """
       res.markdown response.join('\n\n')
 
-  robot.respond /nba standing(s?)/, (res) ->
+  robot.respond /nba standing(s?)/i, (res) ->
     displayTeam = (t) ->
       behind = if t.gamesBehind is '-' then '' else "(#{t.gamesBehind}GB)"
       """
@@ -168,7 +168,7 @@ module.exports = (robot) ->
         """
       res.markdown response.join('\n\n\n')
 
-  robot.respond /nba hustle/, (res) ->
+  robot.respond /nba hustle/i, (res) ->
     hustleLeaders (error, stats) ->
       if error?
         res.markdown """

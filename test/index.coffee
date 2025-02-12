@@ -143,3 +143,20 @@ describe 'nba', ->
       expect(reply).to.include 'Charges Drawn'
       expect(reply).to.include 'Deflections'
       expect(reply).to.include 'Screen Assist'
+
+  context 'case insensitivity', ->
+    command = '@hubot NBA player lamelo'
+    beforeEach ->
+      co =>
+        yield @room.user.say username, command
+        yield whenResponseArrives(@room)
+
+    it 'should still reply with player stats', ->
+      expect(@room.messages[0]).to.eql [username, command]
+      expect(@room.messages[1][0]).to.eql 'hubot'
+
+      reply = @room.messages[1][1]
+      expect(reply).to.include 'LaMelo Ball'
+      expect(reply).to.include 'Hornets'
+      expect(reply).to.include 'Guard'
+      expect(reply).to.include 'Season averages'
