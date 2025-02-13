@@ -19,7 +19,6 @@
 #
 
 nba = require 'nba'
-request = require 'superagent'
 cheerio = require 'cheerio'
 _ = require 'lodash'
 Case = require 'case'
@@ -94,7 +93,7 @@ module.exports = (robot) ->
           pick = "Round #{player.DRAFT_ROUND}, Pick #{player.DRAFT_NUMBER}"
           draftDetails = "#{pick} (#{player.DRAFT_YEAR})"
         else
-          draftDetails = "(Undrafted)"
+          draftDetails = "Undrafted"
         name = "#{player.PLAYER_FIRST_NAME} #{player.PLAYER_LAST_NAME}"
         """
           #{name} ##{player.JERSEY_NUMBER} (#{player.POSITION})
@@ -269,10 +268,13 @@ currentScoresUrl = [
   '/2024/scores/00_todays_scores.json'
 ].join ''
 requestCurrentScores = (cb) ->
-  request
-    .get(currentScoresUrl)
-    .end (err, res) ->
-      cb err, JSON.parse(res.text)
+  fetchJson(currentScoresUrl, cb)
+
+fetchJson = (url, cb) ->
+  fetch(url)
+    .then((res) -> res.json())
+    .then((json) -> cb(null, json))
+    .catch((error) -> cb(error))
 
 getScores = (cb) ->
   requestCurrentScores (err, data) ->
@@ -312,10 +314,7 @@ conferenceStandingsUrl = [
   '/core/nba/standings?xhr=1&device=desktop'
 ].join ''
 requestConferenceStandings = (cb) ->
-  request
-    .get(conferenceStandingsUrl)
-    .end (err, res) ->
-      cb err, JSON.parse(res.text)
+  fetchJson(conferenceStandingsUrl, cb)
 
 getConferenceStandings = (cb) ->
   requestConferenceStandings (err, data) ->
