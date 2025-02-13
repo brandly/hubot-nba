@@ -41,6 +41,10 @@ module.exports = (robot) => {
         res.markdown(`Couldn't find player with name "${name}"`)
         return
       }
+      if (error) {
+        res.markdown(`Unexpected error: ${JSON.stringify(error)}`)
+        return
+      }
       getPlayerSummary(player.PERSON_ID, (error, summary) => {
         res.markdown(error || summary)
       })
@@ -65,10 +69,12 @@ module.exports = (robot) => {
         }
 
         const info = data[0]
-        res.markdown(`
-        ${info.teamName} (${info.w}-${info.l})
-        ${info.pts}pts, ${info.ast}ast, ${info.reb}reb
-      `)
+        res.markdown(
+          [
+            `${info.teamName} (${info.w}-${info.l})`,
+            `${info.pts}pts, ${info.ast}ast, ${info.reb}reb`
+          ].join('\n')
+        )
       })
       .catch((reason) => {
         res.markdown(`Error getting team stats
@@ -77,51 +83,49 @@ module.exports = (robot) => {
   })
 
   robot.respond(/nba roster (.*)/i, function (res) {
-    var TeamID, name
-    name = res.match[1]
-    TeamID = nba.teamIdFromName(name)
+    const name = res.match[1]
+    const TeamID = nba.teamIdFromName(name)
     if (TeamID == null) {
       res.markdown(`Couldn't find team with name \"${name}\"`)
       return
     }
     return playersFromTeamId(TeamID, function (error, players) {
-      var listings
       if (error != null) {
-        res.markdown(`Error getting team roster
-${JSON.stringify(error, null, 2)}`)
+        res.markdown(
+          `Error getting team roster\n${JSON.stringify(error, null, 2)}`
+        )
         return
       }
-      listings = players.map(function (player) {
-        var draftDetails, pick
-        if (player.DRAFT_YEAR != null) {
+      const listings = players.map(function (player) {
+        let draftDetails, pick
+        if (player.DRAFT_YEAR) {
           pick = `Round ${player.DRAFT_ROUND}, Pick ${player.DRAFT_NUMBER}`
           draftDetails = `${pick} (${player.DRAFT_YEAR})`
         } else {
           draftDetails = 'Undrafted'
         }
-        name = `${player.PLAYER_FIRST_NAME} ${player.PLAYER_LAST_NAME}`
-        return `${name} #${player.JERSEY_NUMBER} (${player.POSITION})
-${displayHeight(player.HEIGHT)} ${player.WEIGHT} lbs
-${player.COLLEGE} | ${draftDetails}`.trim()
+        const name = `${player.PLAYER_FIRST_NAME} ${player.PLAYER_LAST_NAME}`
+        return [
+          `${name} #${player.JERSEY_NUMBER} (${player.POSITION})`,
+          `${displayHeight(player.HEIGHT)} ${player.WEIGHT} lbs`,
+          `${player.COLLEGE} | ${draftDetails}`
+        ].join('\n')
       })
       return res.markdown(listings.join('\n\n'))
     })
   })
   robot.respond(/nba coaches (.*)/i, function (res) {
-    var TeamID, name
-    name = res.match[1]
-    TeamID = nba.teamIdFromName(name)
+    const name = res.match[1]
+    const TeamID = nba.teamIdFromName(name)
     if (TeamID == null) {
       res.markdown(`Couldn't find team with name \"${name}\"`)
       return
     }
     return nba.stats.commonTeamRoster({ TeamID }).then(
       function ({ coaches }) {
-        var listings
-        listings = coaches.map(function (coach) {
-          return `${coach.coachName}, ${coach.coachType}
-${coach.school || ''}`.trim()
-        })
+        const listings = coaches.map((coach) =>
+          `${coach.coachName}, ${coach.coachType}\n${coach.school || ''}`.trim()
+        )
         return res.markdown(listings.join('\n\n'))
       },
       function (reason) {
@@ -131,8 +135,7 @@ ${JSON.stringify(reason, null, 2)}`)
     )
   })
   robot.respond(/nba scores/i, function (res) {
-    var getContext, getTeamNames
-    getContext = function (game) {
+    function getContext(game) {
       if (game.hasBegun) {
         return `${game.away.score} - ${game.home.score}`
       } else if (game.series) {
@@ -141,11 +144,10 @@ ${JSON.stringify(reason, null, 2)}`)
         return 'First matchup'
       }
     }
-    getTeamNames = function (game) {
-      var away, home, homeTeamWon
-      ;({ away, home } = game)
+    function getTeamNames(game) {
+      const { away, home } = game
       if (game.isOver) {
-        homeTeamWon = home.score > away.score
+        const homeTeamWon = home.score > away.score
         if (homeTeamWon) {
           return `${away.name} at *${home.name}*`
         } else {
@@ -156,41 +158,33 @@ ${JSON.stringify(reason, null, 2)}`)
       }
     }
     return getScores(function (err, scores) {
-      var response
-      response = scores.map(function (game) {
-        return `${getTeamNames(game)}
-${game.status} | ${getContext(game)}`
-      })
+      const response = scores.map(
+        (game) => `${getTeamNames(game)}\n${game.status} | ${getContext(game)}`
+      )
       return res.markdown(response.join('\n\n'))
     })
   })
   robot.respond(/nba standing(s?)/i, function (res) {
-    var displayTeam
-    displayTeam = function (t) {
-      var behind
-      behind = t.gamesBehind === '-' ? '' : `(${t.gamesBehind}GB)`
+    function displayTeam(t) {
+      const behind = t.gamesBehind === '-' ? '' : `(${t.gamesBehind}GB)`
       return `#${t.seed} ${t.name} ${behind}
 ${t.wins}W - ${t.losses}L (${t.winPercent})`
     }
     return getConferenceStandings(function (err, conferences) {
-      var response
-      response = conferences.map(function (conference) {
-        return `${conference.name}
-
-${conference.teams.map(displayTeam).join('\n\n')}`
+      const response = conferences.map(function (conference) {
+        return `${conference.name}\n\n${conference.teams.map(displayTeam).join('\n\n')}`
       })
       return res.markdown(response.join('\n\n\n'))
     })
   })
   return robot.respond(/nba hustle/i, function (res) {
     return hustleLeaders(function (error, stats) {
-      var commonKeys, statLeaderLists
       if (error != null) {
         res.markdown(`Error getting hustle leaders
 ${JSON.stringify(error, null, 2)}`)
         return
       }
-      commonKeys = [
+      const commonKeys = [
         'playerId',
         'playerName',
         'teamId',
@@ -198,14 +192,12 @@ ${JSON.stringify(error, null, 2)}`)
         'age',
         'rank'
       ]
-      statLeaderLists = stats.map(function (stat) {
-        var listings
-        listings = stat.leaders.map(function (leader) {
-          var countKey, playerName, teamAbbreviation
-          countKey = Object.keys(leader).find(function (key) {
-            return !_.includes(commonKeys, key)
-          })
-          ;({ playerName, teamAbbreviation } = leader)
+      const statLeaderLists = stats.map(function (stat) {
+        const listings = stat.leaders.map(function (leader) {
+          const countKey = Object.keys(leader).find(
+            (key) => !_.includes(commonKeys, key)
+          )
+          const { playerName, teamAbbreviation } = leader
           return `${playerName} (${teamAbbreviation}) ${leader[countKey]}`
         })
         return `> ${stat.name}
@@ -244,35 +236,30 @@ function displayPercentage(num) {
 }
 
 function toTable(stats) {
-  var columnCount, joinedRows, listOfColumns, paddedColumns, rowsPerColumn
-  columnCount = 2
-  rowsPerColumn = stats.length / columnCount
-  listOfColumns = _.range(columnCount).map(function (index) {
-    return stats.slice(index * rowsPerColumn, (index + 1) * rowsPerColumn)
-  })
-  paddedColumns = listOfColumns.map(padColumn)
-  joinedRows = _.range(paddedColumns[0].length).map(function (rowIndex) {
-    return _.range(columnCount)
-      .map(function (columnIndex) {
-        return paddedColumns[columnIndex][rowIndex]
-      })
+  const columnCount = 2
+  const rowsPerColumn = stats.length / columnCount
+  const listOfColumns = _.range(columnCount).map((index) =>
+    stats.slice(index * rowsPerColumn, (index + 1) * rowsPerColumn)
+  )
+  const paddedColumns = listOfColumns.map(padColumn)
+  const joinedRows = _.range(paddedColumns[0].length).map((rowIndex) =>
+    _.range(columnCount)
+      .map((columnIndex) => paddedColumns[columnIndex][rowIndex])
       .join(' | ')
-  })
+  )
   return `\`\`\`\n${joinedRows.join('\n')}\n\`\`\``
 }
 
 function padColumn(column) {
-  var widestColumn
-  widestColumn = Math.max.apply(
+  const widestColumn = Math.max.apply(
     Math,
     column.map(function (item) {
       return item.length
     })
   )
   return column.map(function (item) {
-    var index
     while (item.length < widestColumn) {
-      index = item.indexOf(' ')
+      const index = item.indexOf(' ')
       item = item.slice(0, index) + ' ' + item.slice(index, item.length)
     }
     return item
@@ -298,11 +285,10 @@ function fetchJson(url, callback) {
 
 function getScores(cb) {
   return requestCurrentScores(function (err, data) {
-    var formattedScores
     if (err != null) {
       return cb(err, null)
     }
-    formattedScores = data.gs.g.map(function (game) {
+    const formattedScores = data.gs.g.map(function (game) {
       return {
         hasBegun: !!game.cl,
         isOver: game.stt === 'Final',
@@ -347,11 +333,10 @@ function requestConferenceStandings(cb) {
 
 function getConferenceStandings(cb) {
   return requestConferenceStandings(function (err, data) {
-    var conferences
     if (err != null) {
       return cb(err, null)
     }
-    conferences = data.content.standings.groups.map(buildConference)
+    const conferences = data.content.standings.groups.map(buildConference)
     return cb(null, conferences)
   })
 }
@@ -364,15 +349,7 @@ function buildConference(data) {
 }
 
 function buildTeamStanding(data) {
-  var getStat, stats, team
-  getStat = function (stats, name) {
-    var matches
-    matches = stats.filter(function (stat) {
-      return stat.name === name
-    })
-    return matches[0].displayValue
-  }
-  ;({ team, stats } = data)
+  const { team, stats } = data
   return {
     name: team.name,
     city: team.location,
@@ -384,12 +361,15 @@ function buildTeamStanding(data) {
     gamesBehind: getStat(stats, 'gamesBehind')
   }
 }
+function getStat(stats, name) {
+  const matches = stats.filter((stat) => stat.name === name)
+  return matches[0].displayValue
+}
 
 function getPlayerProfile(opts) {
   return nba.stats.playerProfile(opts).then(function (profile) {
-    var averages, regularSeason
-    regularSeason = profile.seasonTotalsRegularSeason
-    averages = regularSeason[regularSeason.length - 1]
+    const regularSeason = profile.seasonTotalsRegularSeason
+    const averages = regularSeason[regularSeason.length - 1]
     return { averages }
   })
 }
@@ -400,9 +380,8 @@ function getPlayerSummary(PlayerID, callback) {
     getPlayerProfile({ PlayerID })
   ]).then(
     function ([playerInfo, playerProfile]) {
-      var averages, info
-      info = playerInfo.commonPlayerInfo[0]
-      ;({ averages } = playerProfile)
+      const info = playerInfo.commonPlayerInfo[0]
+      const { averages } = playerProfile
       return callback(
         null,
         `${info.displayFirstLast} #${info.jersey}
@@ -430,8 +409,7 @@ function displayHeight(str) {
 function hustleLeaders(callback) {
   return nba.stats.playerHustleLeaders().then(
     function (val) {
-      var stats
-      stats = val.resultSets.map(function (set) {
+      const stats = val.resultSets.map(function (set) {
         return {
           name: Case.title(set.name).replace('Player ', ''),
           leaders: set.rowSet.map(function (row) {
@@ -457,18 +435,14 @@ function fetchPlayers(cb) {
     return
   }
   return fetch('https://www.nba.com/players')
-    .then(function (res) {
-      return res.text()
-    })
+    .then((res) => res.text())
     .then(function (text) {
-      var $, data, players
-      $ = cheerio.load(text)
-      data = JSON.parse($('#__NEXT_DATA__').text())
-      players = data.props.pageProps.players.map(function (player) {
-        return Object.assign({}, player, {
-          FULL_NAME: `${player.PLAYER_FIRST_NAME} ${player.PLAYER_LAST_NAME}`
-        })
-      })
+      const $ = cheerio.load(text)
+      const data = JSON.parse($('#__NEXT_DATA__').text())
+      const players = data.props.pageProps.players.map((player) => ({
+        ...player,
+        FULL_NAME: `${player.PLAYER_FIRST_NAME} ${player.PLAYER_LAST_NAME}`
+      }))
       cachedPlayers = players
       return cb(null, players)
     })
@@ -485,9 +459,9 @@ function playerIdFromName(name, cb) {
     }
     return cb(
       null,
-      players.find(function (p) {
-        return p.FULL_NAME.toLowerCase().includes(name.toLowerCase())
-      })
+      players.find((p) =>
+        p.FULL_NAME.toLowerCase().includes(name.toLowerCase())
+      )
     )
   })
 }
@@ -500,9 +474,7 @@ function playersFromTeamId(teamId, cb) {
     }
     return cb(
       null,
-      players.filter(function (p) {
-        return p.TEAM_ID === teamId
-      })
+      players.filter((p) => p.TEAM_ID === teamId)
     )
   })
 }
