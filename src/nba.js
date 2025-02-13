@@ -17,63 +17,64 @@
 // Author:
 //   brandly
 
-var Case, _, buildConference, buildStatus, buildTeam, buildTeamStanding, cachedPlayers, cheerio, conferenceStandingsUrl, currentScoresUrl, displayAverages, displayHeight, displayPercentage, fetchJson, fetchPlayers, getConferenceStandings, getPlayerProfile, getPlayerSummary, getScores, hustleLeaders, nba, padColumn, playerIdFromName, playersFromTeamId, requestConferenceStandings, requestCurrentScores, toTable;
+var buildConference, buildStatus, buildTeam, buildTeamStanding, cachedPlayers, conferenceStandingsUrl, currentScoresUrl, displayAverages, displayHeight, displayPercentage, fetchPlayers, getConferenceStandings, getPlayerProfile, getPlayerSummary, getScores, hustleLeaders, padColumn, playerIdFromName, playersFromTeamId, requestConferenceStandings, requestCurrentScores, toTable;
 
-nba = require('nba');
+const nba = require('nba');
+const cheerio = require('cheerio');
+const _ = require('lodash');
+const Case = require('case');
 
-cheerio = require('cheerio');
-
-_ = require('lodash');
-
-Case = require('case');
-
-module.exports = function(robot) {
+module.exports = (robot) => {
   robot.Response.prototype.markdown = function(text) {
     // Check if we're using Telegram adapter
     if (robot.adapterName === 'telegram') {
       // Get the Telegram API instance from the adapter
-      return robot.adapter.bot.sendMessage(this.message.room, text, {
+      robot.adapter.bot.sendMessage(this.message.room, text, {
         parse_mode: "Markdown"
       });
     } else {
-      return this.send(text);
+      this.send(text);
     }
   };
-  robot.respond(/nba player (.*)/i, function(res) {
-    var name;
-    name = res.match[1];
-    return playerIdFromName(name, function(error, player) {
-      if (player == null) {
-        res.markdown(`Couldn't find player with name \"${name}\"`);
+  robot.respond(/nba player (.*)/i, (res) => {
+    const name = res.match[1];
+    playerIdFromName(name, (error, player) => {
+      if (!player) {
+        res.markdown(`Couldn't find player with name "${name}"`);
         return;
       }
-      return getPlayerSummary(player.PERSON_ID, function(error, summary) {
-        return res.markdown(error || summary);
+      getPlayerSummary(player.PERSON_ID, (error, summary) => {
+        res.markdown(error || summary);
       });
     });
   });
-  robot.respond(/nba team (.*)/i, function(res) {
-    var TeamId, name;
-    name = res.match[1];
-    TeamId = nba.teamIdFromName(name);
-    if (TeamId == null) {
-      res.markdown(`Couldn't find team with name \"${name}\"`);
+
+  robot.respond(/nba team (.*)/i, (res) => {
+    const name = res.match[1];
+    const TeamId = nba.teamIdFromName(name);
+
+    if (!TeamId) {
+      res.markdown(`Couldn't find team with name "${name}"`);
       return;
     }
-    return nba.stats.teamStats({TeamId}).then(function(data) {
-      var info;
+
+    nba.stats.teamStats({ TeamId }).then((data) => {
       if (!data.length) {
-        res.markdown(`Couldn't find stats for team \"${TeamId}\"`);
+        res.markdown(`Couldn't find stats for team "${TeamId}"`);
         return;
       }
-      info = data[0];
-      return res.markdown(`${info.teamName} (${info.w}-${info.l})
-${info.pts}pts, ${info.ast}ast, ${info.reb}reb`);
-    }, function(reason) {
-      return res.markdown(`Error getting team stats
-${JSON.stringify(reason, null, 2)}`);
+
+      const info = data[0];
+      res.markdown(`
+        ${info.teamName} (${info.w}-${info.l})
+        ${info.pts}pts, ${info.ast}ast, ${info.reb}reb
+      `);
+    }).catch((reason) => {
+      res.markdown(`Error getting team stats
+      ${JSON.stringify(reason, null, 2)}`);
     });
   });
+
   robot.respond(/nba roster (.*)/i, function(res) {
     var TeamID, name;
     name = res.match[1];
@@ -249,15 +250,12 @@ requestCurrentScores = function(cb) {
   return fetchJson(currentScoresUrl, cb);
 };
 
-fetchJson = function(url, cb) {
-  return fetch(url).then(function(res) {
-    return res.json();
-  }).then(function(json) {
-    return cb(null, json);
-  }).catch(function(error) {
-    return cb(error);
-  });
-};
+function fetchJson(url, callback) {
+  fetch(url)
+    .then((res) => res.json())
+    .then((json) => callback(null, json))
+    .catch((error) => callback(error));
+}
 
 getScores = function(cb) {
   return requestCurrentScores(function(err, data) {
