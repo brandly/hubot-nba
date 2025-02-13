@@ -17,29 +17,6 @@
 // Author:
 //   brandly
 
-var buildConference,
-  buildStatus,
-  buildTeam,
-  buildTeamStanding,
-  cachedPlayers,
-  conferenceStandingsUrl,
-  currentScoresUrl,
-  displayAverages,
-  displayHeight,
-  displayPercentage,
-  fetchPlayers,
-  getConferenceStandings,
-  getPlayerProfile,
-  getPlayerSummary,
-  getScores,
-  hustleLeaders,
-  padColumn,
-  playerIdFromName,
-  playersFromTeamId,
-  requestConferenceStandings,
-  requestCurrentScores,
-  toTable
-
 const nba = require('nba')
 const cheerio = require('cheerio')
 const _ = require('lodash')
@@ -239,7 +216,7 @@ ${listings.join('\n')}`
   })
 }
 
-displayAverages = function (avg) {
+function displayAverages(avg) {
   return toTable([
     `${avg.gp} GP`,
     `${avg.min} MIN`,
@@ -262,11 +239,11 @@ displayAverages = function (avg) {
   ])
 }
 
-displayPercentage = function (num) {
+function displayPercentage(num) {
   return (num * 100).toFixed(1)
 }
 
-toTable = function (stats) {
+function toTable(stats) {
   var columnCount, joinedRows, listOfColumns, paddedColumns, rowsPerColumn
   columnCount = 2
   rowsPerColumn = stats.length / columnCount
@@ -284,7 +261,7 @@ toTable = function (stats) {
   return `\`\`\`\n${joinedRows.join('\n')}\n\`\`\``
 }
 
-padColumn = function (column) {
+function padColumn(column) {
   var widestColumn
   widestColumn = Math.max.apply(
     Math,
@@ -302,13 +279,13 @@ padColumn = function (column) {
   })
 }
 
-currentScoresUrl = [
+const currentScoresUrl = [
   'http://data.nba.com',
   '/data/5s/v2015/json/mobile_teams/nba',
   '/2024/scores/00_todays_scores.json'
 ].join('')
 
-requestCurrentScores = function (cb) {
+function requestCurrentScores(cb) {
   return fetchJson(currentScoresUrl, cb)
 }
 
@@ -319,7 +296,7 @@ function fetchJson(url, callback) {
     .catch((error) => callback(error))
 }
 
-getScores = function (cb) {
+function getScores(cb) {
   return requestCurrentScores(function (err, data) {
     var formattedScores
     if (err != null) {
@@ -339,7 +316,7 @@ getScores = function (cb) {
   })
 }
 
-buildTeam = function (team) {
+function buildTeam(team) {
   return {
     id: team.tid,
     city: team.tc,
@@ -349,7 +326,7 @@ buildTeam = function (team) {
   }
 }
 
-buildStatus = function (game) {
+function buildStatus(game) {
   if (game.stt === 'Final') {
     return 'Final'
   } else if (game.cl == null || game.cl === '00:00.0') {
@@ -359,16 +336,16 @@ buildStatus = function (game) {
   }
 }
 
-conferenceStandingsUrl = [
+const conferenceStandingsUrl = [
   'http://cdn.espn.go.com',
   '/core/nba/standings?xhr=1&device=desktop'
 ].join('')
 
-requestConferenceStandings = function (cb) {
+function requestConferenceStandings(cb) {
   return fetchJson(conferenceStandingsUrl, cb)
 }
 
-getConferenceStandings = function (cb) {
+function getConferenceStandings(cb) {
   return requestConferenceStandings(function (err, data) {
     var conferences
     if (err != null) {
@@ -379,14 +356,14 @@ getConferenceStandings = function (cb) {
   })
 }
 
-buildConference = function (data) {
+function buildConference(data) {
   return {
     name: data.name,
     teams: data.standings.entries.map(buildTeamStanding)
   }
 }
 
-buildTeamStanding = function (data) {
+function buildTeamStanding(data) {
   var getStat, stats, team
   getStat = function (stats, name) {
     var matches
@@ -408,7 +385,7 @@ buildTeamStanding = function (data) {
   }
 }
 
-getPlayerProfile = function (opts) {
+function getPlayerProfile(opts) {
   return nba.stats.playerProfile(opts).then(function (profile) {
     var averages, regularSeason
     regularSeason = profile.seasonTotalsRegularSeason
@@ -417,7 +394,7 @@ getPlayerProfile = function (opts) {
   })
 }
 
-getPlayerSummary = function (PlayerID, callback) {
+function getPlayerSummary(PlayerID, callback) {
   return Promise.all([
     nba.stats.playerInfo({ PlayerID }),
     getPlayerProfile({ PlayerID })
@@ -445,13 +422,12 @@ ${JSON.stringify(reason, null, 2)}`)
   )
 }
 
-displayHeight = function (str) {
-  var feet, inches
-  ;[feet, inches] = str.split('-')
+function displayHeight(str) {
+  const [feet, inches] = str.split('-')
   return `${feet}'${inches}\"`
 }
 
-hustleLeaders = function (callback) {
+function hustleLeaders(callback) {
   return nba.stats.playerHustleLeaders().then(
     function (val) {
       var stats
@@ -474,9 +450,8 @@ hustleLeaders = function (callback) {
   )
 }
 
-cachedPlayers = null
-
-fetchPlayers = function (cb) {
+let cachedPlayers = null
+function fetchPlayers(cb) {
   if (cachedPlayers != null) {
     cb(null, cachedPlayers)
     return
@@ -502,7 +477,7 @@ fetchPlayers = function (cb) {
     })
 }
 
-playerIdFromName = function (name, cb) {
+function playerIdFromName(name, cb) {
   return fetchPlayers(function (err, players) {
     if (err != null) {
       cb(err)
@@ -517,7 +492,7 @@ playerIdFromName = function (name, cb) {
   })
 }
 
-playersFromTeamId = function (teamId, cb) {
+function playersFromTeamId(teamId, cb) {
   return fetchPlayers(function (err, players) {
     if (err != null) {
       cb(err)
