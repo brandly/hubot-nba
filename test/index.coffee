@@ -72,9 +72,8 @@ describe 'nba', ->
       reply = @room.messages[1][1]
 
       expect(reply).to.include 'Giannis Antetokounmpo'
-      giannisBday = 'DEC 06, 1994'
-      expect(reply).to.include giannisBday
-      expect(reply).to.include 'Jrue Holiday'
+      expect(reply).to.include '6\'11" 243 lbs'
+      expect(reply).to.include 'Damian Lillard'
 
   context 'team coaches', ->
     command = '@hubot nba coaches spurs'
