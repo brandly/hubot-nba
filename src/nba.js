@@ -82,21 +82,21 @@ module.exports = (robot) => {
       })
   })
 
-  robot.respond(/nba roster (.*)/i, function (res) {
+  robot.respond(/nba roster (.*)/i, (res) => {
     const name = res.match[1]
     const TeamID = nba.teamIdFromName(name)
     if (TeamID == null) {
       res.markdown(`Couldn't find team with name \"${name}\"`)
       return
     }
-    return playersFromTeamId(TeamID, function (error, players) {
+    return playersFromTeamId(TeamID, (error, players) => {
       if (error != null) {
         res.markdown(
           `Error getting team roster\n${JSON.stringify(error, null, 2)}`
         )
         return
       }
-      const listings = players.map(function (player) {
+      const listings = players.map((player) => {
         let draftDetails, pick
         if (player.DRAFT_YEAR) {
           pick = `Round ${player.DRAFT_ROUND}, Pick ${player.DRAFT_NUMBER}`
@@ -114,7 +114,7 @@ module.exports = (robot) => {
       return res.markdown(listings.join('\n\n'))
     })
   })
-  robot.respond(/nba coaches (.*)/i, function (res) {
+  robot.respond(/nba coaches (.*)/i, (res) => {
     const name = res.match[1]
     const TeamID = nba.teamIdFromName(name)
     if (TeamID == null) {
@@ -134,7 +134,7 @@ ${JSON.stringify(reason, null, 2)}`)
       }
     )
   })
-  robot.respond(/nba scores/i, function (res) {
+  robot.respond(/nba scores/i, (res) => {
     function getContext(game) {
       if (game.hasBegun) {
         return `${game.away.score} - ${game.home.score}`
@@ -157,28 +157,31 @@ ${JSON.stringify(reason, null, 2)}`)
         return `${away.name} at ${home.name}`
       }
     }
-    return getScores(function (err, scores) {
+    return getScores((err, scores) => {
       const response = scores.map(
         (game) => `${getTeamNames(game)}\n${game.status} | ${getContext(game)}`
       )
       return res.markdown(response.join('\n\n'))
     })
   })
-  robot.respond(/nba standing(s?)/i, function (res) {
+  robot.respond(/nba standing(s?)/i, (res) => {
     function displayTeam(t) {
       const behind = t.gamesBehind === '-' ? '' : `(${t.gamesBehind}GB)`
       return `#${t.seed} ${t.name} ${behind}
 ${t.wins}W - ${t.losses}L (${t.winPercent})`
     }
-    return getConferenceStandings(function (err, conferences) {
-      const response = conferences.map(function (conference) {
-        return `${conference.name}\n\n${conference.teams.map(displayTeam).join('\n\n')}`
-      })
+    return getConferenceStandings((err, conferences) => {
+      const response = conferences.map(
+        (conference) =>
+          `${conference.name}\n\n${conference.teams
+            .map(displayTeam)
+            .join('\n\n')}`
+      )
       return res.markdown(response.join('\n\n\n'))
     })
   })
-  return robot.respond(/nba hustle/i, function (res) {
-    return hustleLeaders(function (error, stats) {
+  return robot.respond(/nba hustle/i, (res) => {
+    return hustleLeaders((error, stats) => {
       if (error != null) {
         res.markdown(`Error getting hustle leaders
 ${JSON.stringify(error, null, 2)}`)
@@ -192,8 +195,8 @@ ${JSON.stringify(error, null, 2)}`)
         'age',
         'rank'
       ]
-      const statLeaderLists = stats.map(function (stat) {
-        const listings = stat.leaders.map(function (leader) {
+      const statLeaderLists = stats.map((stat) => {
+        const listings = stat.leaders.map((leader) => {
           const countKey = Object.keys(leader).find(
             (key) => !_.includes(commonKeys, key)
           )
@@ -253,11 +256,9 @@ function toTable(stats) {
 function padColumn(column) {
   const widestColumn = Math.max.apply(
     Math,
-    column.map(function (item) {
-      return item.length
-    })
+    column.map((item) => item.length)
   )
-  return column.map(function (item) {
+  return column.map((item) => {
     while (item.length < widestColumn) {
       const index = item.indexOf(' ')
       item = item.slice(0, index) + ' ' + item.slice(index, item.length)
@@ -284,11 +285,11 @@ function fetchJson(url, callback) {
 }
 
 function getScores(cb) {
-  return requestCurrentScores(function (err, data) {
+  return requestCurrentScores((err, data) => {
     if (err != null) {
       return cb(err, null)
     }
-    const formattedScores = data.gs.g.map(function (game) {
+    const formattedScores = data.gs.g.map((game) => {
       return {
         hasBegun: !!game.cl,
         isOver: game.stt === 'Final',
@@ -332,7 +333,7 @@ function requestConferenceStandings(cb) {
 }
 
 function getConferenceStandings(cb) {
-  return requestConferenceStandings(function (err, data) {
+  return requestConferenceStandings((err, data) => {
     if (err != null) {
       return cb(err, null)
     }
@@ -367,7 +368,7 @@ function getStat(stats, name) {
 }
 
 function getPlayerProfile(opts) {
-  return nba.stats.playerProfile(opts).then(function (profile) {
+  return nba.stats.playerProfile(opts).then((profile) => {
     const regularSeason = profile.seasonTotalsRegularSeason
     const averages = regularSeason[regularSeason.length - 1]
     return { averages }
@@ -409,17 +410,15 @@ function displayHeight(str) {
 function hustleLeaders(callback) {
   return nba.stats.playerHustleLeaders().then(
     function (val) {
-      const stats = val.resultSets.map(function (set) {
-        return {
-          name: Case.title(set.name).replace('Player ', ''),
-          leaders: set.rowSet.map(function (row) {
-            return _.zip(set.headers, row).reduce(function (store, val) {
-              store[Case.camel(val[0])] = val[1]
-              return store
-            }, {})
-          })
-        }
-      })
+      const stats = val.resultSets.map((set) => ({
+        name: Case.title(set.name).replace('Player ', ''),
+        leaders: set.rowSet.map((row) =>
+          _.zip(set.headers, row).reduce((store, val) => {
+            store[Case.camel(val[0])] = val[1]
+            return store
+          }, {})
+        )
+      }))
       return callback(null, stats)
     },
     function (error) {
@@ -452,7 +451,7 @@ function fetchPlayers(cb) {
 }
 
 function playerIdFromName(name, cb) {
-  return fetchPlayers(function (err, players) {
+  return fetchPlayers((err, players) => {
     if (err != null) {
       cb(err)
       return
@@ -467,7 +466,7 @@ function playerIdFromName(name, cb) {
 }
 
 function playersFromTeamId(teamId, cb) {
-  return fetchPlayers(function (err, players) {
+  return fetchPlayers((err, players) => {
     if (err != null) {
       cb(err)
       return
