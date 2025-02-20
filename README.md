@@ -14,11 +14,10 @@ Then, add `"hubot-nba"` to your `external-scripts.json` list.
 
 ### usage
 
-View [the code](https://github.com/brandly/hubot-nba/blob/master/src/nba.coffee) for a full list of supported commands.
+View [the code](https://github.com/brandly/hubot-nba/blob/master/src/nba.js) for a full list of supported commands.
 
 ### tests
 
 ```shell
 $ npm test
 ```
-
