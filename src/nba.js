@@ -163,7 +163,7 @@ ${JSON.stringify(reason, null, 2)}`)
         res.markdown('Error getting scores')
         return
       }
-      if (scores.length) {
+      if (scores.length === 0) {
         res.markdown('No scores found')
         return
       }
