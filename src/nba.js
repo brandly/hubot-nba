@@ -158,6 +158,15 @@ ${JSON.stringify(reason, null, 2)}`)
       }
     }
     return getScores((err, scores) => {
+      if (err) {
+        console.error(error)
+        res.markdown('Error getting scores')
+        return
+      }
+      if (scores.length) {
+        res.markdown('No scores found')
+        return
+      }
       const response = scores.map(
         (game) => `${getTeamNames(game)}\n${game.status} | ${getContext(game)}`
       )
