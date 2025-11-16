@@ -90,7 +90,7 @@ describe('nba', function () {
       const reply = this.room.messages[1][1]
       expect(reply).to.include('Giannis Antetokounmpo')
       expect(reply).to.include('6\'11" 243 lbs')
-      expect(reply).to.include('Damian Lillard')
+      expect(reply).to.include('Myles Turner')
     })
   })
 
