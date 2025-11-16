@@ -270,7 +270,7 @@ function padColumn(column) {
 const currentScoresUrl = [
   'http://data.nba.com',
   '/data/5s/v2015/json/mobile_teams/nba',
-  '/2024/scores/00_todays_scores.json'
+  '/2025/scores/00_todays_scores.json'
 ].join('')
 
 function requestCurrentScores(cb) {
