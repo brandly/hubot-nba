@@ -276,11 +276,8 @@ function padColumn(column) {
   })
 }
 
-const currentScoresUrl = [
-  'http://data.nba.com',
-  '/data/5s/v2015/json/mobile_teams/nba',
-  '/2025/scores/00_todays_scores.json'
-].join('')
+const currentScoresUrl =
+  'https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json'
 
 function requestCurrentScores(cb) {
   return fetchJson(currentScoresUrl, cb)
@@ -298,37 +295,35 @@ function getScores(cb) {
     if (err != null) {
       return cb(err, null)
     }
-    const formattedScores = data.gs.g.map((game) => {
-      return {
-        hasBegun: !!game.cl,
-        isOver: game.stt === 'Final',
-        status: buildStatus(game),
-        away: buildTeam(game.v),
-        home: buildTeam(game.h),
-        series: game.lm.seri
-      }
-    })
+    const formattedScores = data.scoreboard.games.map((game) => ({
+      hasBegun: game.gameStatus > 1,
+      isOver: game.gameStatus === 3,
+      status: buildStatus(game),
+      away: buildTeam(game.awayTeam),
+      home: buildTeam(game.homeTeam),
+      series: game.seriesText ?? '0 - 0'
+    }))
     return cb(null, formattedScores)
   })
 }
 
 function buildTeam(team) {
   return {
-    id: team.tid,
-    city: team.tc,
-    name: team.tn,
-    abbrev: team.ta,
-    score: team.s
+    id: team.teamId,
+    city: team.teamCity,
+    name: team.teamName,
+    abbrev: team.teamTricode,
+    score: team.score
   }
 }
 
 function buildStatus(game) {
-  if (game.stt === 'Final') {
+  if (game.gameStatus === 3) {
     return 'Final'
-  } else if (game.cl == null || game.cl === '00:00.0') {
-    return game.stt
+  } else if (game.gameStatus === 1) {
+    return new Date(game.gameTimeUTC).toLocaleString().split(', ')[1]
   } else {
-    return `${game.cl} - ${game.stt}`
+    return game.gameStatusText
   }
 }
 
